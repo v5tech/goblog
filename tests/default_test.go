@@ -1,7 +1,7 @@
 package test
 
 import (
-	_ "beegoblog/routers"
+	_ "goblog/routers"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"

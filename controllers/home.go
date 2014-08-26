@@ -11,12 +11,20 @@ type HomeController struct {
 
 //首页
 func (this *HomeController) Get() {
+
 	this.Data["IsHome"] = true
-	this.Data["IsLogin"] = checkAccount(this.Ctx)
-	if this.GetSession("user") != nil {
-		user := this.GetSession("user").(*models.User) //从Session中获取用户信息
-		this.Data["Nickname"] = user.Nickname
-		this.Data["Username"] = user.Username
+
+	checkAccountSession(&this.Controller)
+
+	topics, err := models.GetAllTopics()  //查询所有的文章
+	categories := models.GetAllCategory() //查询所有的分类
+
+	if err != nil {
+		beego.Error(err)
 	}
+
+	this.Data["Topics"] = topics
+	this.Data["Categories"] = categories
+
 	this.TplNames = "index.html"
 }

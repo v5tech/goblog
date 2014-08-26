@@ -1,0 +1,22 @@
+{{template "header"}}
+<title>{{.Title}}</title>
+</head>
+
+<body>
+    {{template "nav" .}}
+    <div class="container log-reg">
+        {{$IsLogin := .IsLogin}}
+        {{with .Topic}}
+        <h3>{{.Title}}</h3>
+        {{if $IsLogin}}
+            <a href="/topic/modify/{{.Id}}" class="btn btn-default">修改</a>
+            <a href="/topic/delete/{{.Id}}" class="btn btn-default">删除</a>
+        {{end}}
+        <a href="/" class="btn btn-default">返回</a>
+        <h6 class="text-muted"><a href="/user/{{.Username}}">{{.Username}}</a> 发表于 {{.Created}}，共有 {{.Views}} 次浏览， {{.ReplyCount}} 个评论</h6>
+        <p>
+            {{.Content}}
+        </p>
+        {{end}}
+    </div>
+    {{template "footer"}}

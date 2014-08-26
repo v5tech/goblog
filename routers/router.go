@@ -20,7 +20,9 @@ func init() {
 	beego.Router("/user/:username:string", &controllers.UserController{}, "get:GetUserInfo") //获取用户详情
 
 	beego.Router("/topic", &controllers.TopicController{})
-	beego.Router("/topic/add", &controllers.TopicController{}, "post:AddTopic") //发表文章
+	beego.Router("/topic/add", &controllers.TopicController{}, "post:AddTopic")          //发表文章
+	beego.Router("/topic/view/:id", &controllers.TopicController{}, "get:ViewTopic")     //查看文章
+	beego.Router("/topic/delete/:id", &controllers.TopicController{}, "get:DeleteTopic") //删除文章
 	beego.AutoRouter(&controllers.TopicController{})
 
 	beego.Router("/category", &controllers.CategoryController{})

@@ -28,19 +28,69 @@ type User struct {
 
 type Topic struct {
 	Id         int64     `orm:"auto" form:"id"`
-	title      string    `valid:"Required" orm:"size(20);index" form:"title"`
+	Title      string    `valid:"Required" orm:"size(20);index" form:"title"`
 	Content    string    `valid:"Required" orm:"size(5000);index" form:"content"`
 	Category   string    `valid:"Required" orm:"size(100);index" form:"category"`
 	Views      int64     //浏览次数
 	ReplyCount int64     //回复次数
+	Username   string    `orm:"size(20)" valid:"Required" form:"username"`
 	Author     string    `orm:"size(32)"`
 	Created    time.Time `orm:"index"`
 	Updated    time.Time `orm:"index"`
 }
 
 type Category struct {
-	Id           int64  `orm:"auto" form:"id"`
-	CategoryName string `orm:"size(30);index" index`
+	Id           int64     `orm:"auto" form:"id"`
+	CategoryName string    `orm:"size(30);index" index`
+	Created      time.Time `orm:"index"`
+}
+
+/**
+ * 查询所有的分类
+ */
+func GetAllCategory() []*Category {
+	o := orm.NewOrm()
+	categorys := make([]*Category, 0, 10)
+	_, err := o.QueryTable("category").OrderBy("-created").All(&categorys)
+	if err != nil {
+		beego.Error("获取所有的分类出错:" + err.Error())
+		return nil
+	}
+	return categorys
+}
+
+/**
+ * 保存分类
+ */
+
+func AddCategory(categoryName string) bool {
+	o := orm.NewOrm()
+	category := &Category{}
+	category.CategoryName = categoryName
+	category.Created = time.Now()
+	_, err := o.Insert(category)
+	if err != nil {
+		beego.Error("保存分类出错:" + err.Error())
+		return false
+	}
+	return true
+}
+
+/**
+ * 根据分类名称查询分类
+ */
+func GetCategoryByName(categoryName string) bool {
+	o := orm.NewOrm()
+	category := &Category{}
+	err := o.QueryTable("category").Filter("category_name", categoryName).One(category)
+	if err != nil {
+		beego.Error("获取文章分类出错:" + err.Error())
+		return false
+	}
+	if category != nil {
+		return true //存在
+	}
+	return false
 }
 
 /**
@@ -49,15 +99,62 @@ type Category struct {
 
 func AddTopic(topic *Topic) error {
 	o := orm.NewOrm()
-	num, err := o.Insert(topic)
+	_, err := o.Insert(topic)
 	if err != nil {
-		beego.Error(err)
+		beego.Error("发表博客出错:" + err.Error())
 		return err
 	}
-	if num == 1 {
+	return nil
+}
+
+/**
+ * 获取所有的文章
+ */
+func GetAllTopics() ([]*Topic, error) {
+	o := orm.NewOrm()
+	topics := make([]*Topic, 0, 10)
+	_, err := o.QueryTable("topic").OrderBy("-created").All(&topics) //查询所有的文章 按降序排列
+	return topics, err
+}
+
+/**
+ * 根据文章id删除文章
+ */
+func DeleteTopic(id int64) bool {
+	o := orm.NewOrm()
+	topic := new(Topic)
+	topic.Id = id
+	err := o.Read(topic)
+	if err != nil {
+		beego.Error("查询文章出错:" + err.Error())
+		return false
+	}
+	n, err := o.Delete(topic)
+	if err != nil {
+		beego.Error("删除文章出错:" + err.Error())
+		return false
+	}
+	return n == 1
+}
+
+/**
+ * 根据文章id查看文章
+ */
+
+func ViewTopicById(id int64) *Topic {
+	o := orm.NewOrm()
+	topic := &Topic{Id: id}
+	err := o.Read(topic)
+	if err != nil {
+		beego.Error("查看文章出错:" + err.Error())
 		return nil
 	}
-	return nil
+	topic.Views++
+	_, err = o.Update(topic)
+	if err != nil {
+		beego.Error("更新文章浏览次数出错:" + err.Error())
+	}
+	return topic
 }
 
 /**
@@ -77,7 +174,7 @@ func CheckUser(username string) bool {
 	user := &User{}
 	err := o.QueryTable(new(User)).Filter("username", username).One(user)
 	if err != nil {
-		beego.Error(err)
+		beego.Error("检查用户名是否存在出错:" + err.Error())
 		return false
 	}
 	return user != nil
@@ -92,7 +189,7 @@ func Login(user *User) *User {
 	qs := o.QueryTable("user")
 	err := qs.Filter("username", user.Username).Filter("password", user.Password).One(u)
 	if err != nil {
-		beego.Error(err)
+		beego.Error("用户登录验证出错:" + err.Error())
 		return nil
 	}
 	return u
@@ -146,12 +243,12 @@ func DeleteUser(id int64) bool {
 	user := User{Id: id}
 	err := o.Read(&user)
 	if err != nil {
-		beego.Error(err)
+		beego.Error("读取用户信息出错:" + err.Error())
 		return false
 	}
 	num, err := o.Delete(&user)
 	if err != nil {
-		beego.Error(err)
+		beego.Error("删除用户出错:" + err.Error())
 		return false
 	}
 	beego.Info(num)

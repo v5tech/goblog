@@ -1,48 +1,51 @@
 {{template "header"}}
 <title>{{.Title}}</title>
 </head>
+
 <body>
     {{template "nav" .}}
     <div class="container">
         <h1 class="text-center">{{.Title}}</h1>
-		{{if .IsError}}
+        {{if .IsError}}
         <div class="alert alert-danger alert-dismissible" role="alert">
-        	<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-        	<strong>{{.Error}}</strong>
+            <button type="button" class="close" data-dismiss="alert">
+                <span aria-hidden="true">&times;</span>
+                <span class="sr-only">Close</span>
+            </button>
+            <strong>{{.Error}}</strong>
         </div>
-		{{end}}
-		{{with .User}}
-		<div class="panel panel-default">
-		  <div class="panel-heading">{{.Username}}用户详情</div>
-		  <table class="table table-bordered table-hover table-condensed">
-		    <thead>
-		    	<tr>
-			    	<th>用户名</th>
-			    	<th>昵称</th>
-			    	<th>电子邮件</th>
-			    	<th>注册时间</th>
-			    	<th>注册IP</th>
-			    	<th>登录时间</th>
-			    	<th>最后登录IP</th>
-		    	</tr>
-		    </thead>
-		    <tbody>
-		    	<tr>
-		    		<td>{{.Username}}</td>
-		    		<td>{{.Nickname}}</td>
-		    		<td>{{.Email}}</td>
-		    		<td>{{.Registed}}</td>
-		    		<td>{{.Registeip}}</td>
-		    		<td>{{.Lastlogin}}</td>
-		    		<td>{{.Loginip}}</td>
-		    	</tr>
-		    </tbody>
-		  </table>
-		</div>
-		<div class="text-center">
-			<a class="btn btn-default" href="/user/{{.Id}}">删除</a>
-			<a class="btn btn-default" href="/">取消</a>
-		</div>
-		{{end}}
+        {{end}} {{with .User}}
+        <div class="panel panel-default">
+            <div class="panel-heading">{{.Username}}用户详情</div>
+            <table class="table table-bordered table-hover table-condensed">
+                <thead>
+                    <tr>
+                        <th>用户名</th>
+                        <th>昵称</th>
+                        <th>电子邮件</th>
+                        <th>注册时间</th>
+                        <th>注册IP</th>
+                        <th>登录时间</th>
+                        <th>最后登录IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{.Username}}</td>
+                        <td>{{.Nickname}}</td>
+                        <td>{{.Email}}</td>
+                        <td>{{.Registed}}</td>
+                        <td>{{.Registeip}}</td>
+                        <td>{{.Lastlogin}}</td>
+                        <td>{{.Loginip}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="text-center">
+            <a class="btn btn-default" href="/user/{{.Id}}">删除</a>
+            <a class="btn btn-default" href="/">取消</a>
+        </div>
+        {{end}}
     </div>
     {{template "footer"}}

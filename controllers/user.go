@@ -61,7 +61,7 @@ func (this *UserController) RegisterAction() {
 	user := &models.User{}
 	err := this.ParseForm(user)
 	if err != nil {
-		beego.Error(err)
+		beego.Error("用户注册出错:" + err.Error())
 		this.Redirect("/register", 302) //注册失败,重定向到注册页
 		return
 	}
@@ -106,7 +106,8 @@ func (this *UserController) LoginAction() {
 	err := this.ParseForm(user)
 
 	if err != nil {
-		beego.Error(err)
+		beego.Error("用户登录出错:" + err.Error())
+		this.SetSession("Error", "用户登录出错:"+err.Error())
 		this.Redirect("/login", 302) //登录失败,重定向到登录页
 		return
 	}
@@ -156,43 +157,57 @@ func (this *UserController) LoginAction() {
  * 删除用户
  */
 func (this *UserController) DeleteUser() {
-	id := this.Ctx.Input.Param(":id") // /user/:id 删除用户的路径
-	idNum, err := strconv.ParseInt(id, 10, 64)
-	beego.Info(idNum)
-	if err != nil {
-		beego.Error(err)
+	if checkAccountSession(&this.Controller) {
+		id := this.Ctx.Input.Param(":id") // /user/:id 删除用户的路径
+		idNum, err := strconv.ParseInt(id, 10, 64)
+		beego.Info(idNum)
+		if err != nil {
+			beego.Error(err)
+			return
+		}
+
+		models.DeleteUser(idNum)
+		this.DelSession("user")
+		this.Redirect("/", 302)
+		return
+	} else {
+		this.SetSession("Error", "您尚未登录,请登录!")
+		this.Redirect("/login", 302) //跳转到登录页
 		return
 	}
 
-	models.DeleteUser(idNum)
-	this.DelSession("user")
-	this.Redirect("/", 302)
-	return
 }
 
 /**
  * 根据用户名查看用户详细信息
  */
 func (this *UserController) GetUserInfo() {
-	username := this.Ctx.Input.Param(":username") //user/:username
-	user, err := models.GetUserInfo(username)
-	if err != nil {
-		beego.Error(err)
-		this.Redirect("/", 302)
+	if checkAccountSession(&this.Controller) {
+		username := this.Ctx.Input.Param(":username") //user/:username
+		user, err := models.GetUserInfo(username)
+		if err != nil {
+			beego.Error(err)
+			this.Redirect("/", 302)
+			return
+		}
+		if this.GetSession("user") != nil {
+			user := this.GetSession("user").(*models.User) //从Session中获取用户信息
+			this.Data["Nickname"] = user.Nickname
+			this.Data["Username"] = user.Username
+			this.Data["IsLogin"] = true
+		}
+		this.Data["User"] = user
+		this.TplNames = "user.html"
+	} else {
+		this.SetSession("Error", "您尚未登录,请登录!")
+		this.Redirect("/login", 302) //跳转到登录页
 		return
 	}
-	this.Data["IsLogin"] = checkAccount(this.Ctx)
-	if this.GetSession("user") != nil {
-		user := this.GetSession("user").(*models.User) //从Session中获取用户信息
-		this.Data["Nickname"] = user.Nickname
-		this.Data["Username"] = user.Username
-	}
-	this.Data["User"] = user
-	this.TplNames = "user.html"
+
 }
 
 //判断用户是否已登录 从cookie中验证
-func checkAccount(ctx *context.Context) bool {
+func checkAccountCookie(ctx *context.Context) bool {
 	ck, err := ctx.Request.Cookie("username")
 	if err != nil {
 		return false
@@ -211,6 +226,19 @@ func checkAccount(ctx *context.Context) bool {
 	user := &models.User{Username: username, Password: password}
 
 	return models.Login(user) != nil
+}
+
+//判断用户是否已登录 从Session中验证
+func checkAccountSession(ctl *beego.Controller) bool {
+	if ctl.GetSession("user") != nil {
+		user := ctl.GetSession("user").(*models.User) //从Session中获取用户信息
+		ctl.Data["Nickname"] = user.Nickname
+		ctl.Data["Username"] = user.Username
+		ctl.Data["IsLogin"] = true
+		return true
+	} else {
+		return false
+	}
 }
 
 /**
