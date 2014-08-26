@@ -1,0 +1,79 @@
+{{template "header" .}}
+    <title>Beego 博客！</title>
+</head>
+
+<body>
+	
+	{{template "nav" .}}
+
+	<div class="container">
+	  	<div class="jumbotron">
+		  	<h1>Beego 博客！</h1>
+		  	<p>这是一个基于Beego的golang博客系统</p>
+		  	<p><a class="btn btn-primary btn-lg" role="button">建设中。。。</a></p>
+	  	</div>
+	</div>
+
+    <div class="container">
+    	<div class="row">
+	        <div class="col-md-10">
+	        	<div class="page-header">
+				  <h3><a href="#">我的第一篇博客</a></h3>
+				  <h6 class="text-muted">文章发表于 {{.Created}}，共有 {{.Views}} 次浏览， {{.ReplyCount}} 个评论</h6>
+				  <p>
+				  	这是测试文本
+				  </p>
+				</div>
+				<div class="page-header">
+				  <h3><a href="#">我的第二篇博客</a></h3>
+				  <h6 class="text-muted">文章发表于 {{.Created}}，共有 {{.Views}} 次浏览， {{.ReplyCount}} 个评论</h6>
+				  <p>
+				  	这是测试文本
+				  </p>
+				</div>
+				<div class="page-header">
+				  <h3><a href="#">我的第二篇博客</a></h3>
+				  <h6 class="text-muted">文章发表于 {{.Created}}，共有 {{.Views}} 次浏览， {{.ReplyCount}} 个评论</h6>
+				  <p>
+				  	这是测试文本
+				  </p>
+				</div>
+				<div class="page-header">
+				  <h3><a href="#">我的第一篇博客</a></h3>
+				  <h6 class="text-muted">文章发表于 {{.Created}}，共有 {{.Views}} 次浏览， {{.ReplyCount}} 个评论</h6>
+				  <p>
+				  	这是测试文本
+				  </p>
+				</div>
+				<div class="page-header">
+				  <h3><a href="#">我的第二篇博客</a></h3>
+				  <h6 class="text-muted">文章发表于 {{.Created}}，共有 {{.Views}} 次浏览， {{.ReplyCount}} 个评论</h6>
+				  <p>
+				  	这是测试文本
+				  </p>
+				</div>
+				<div class="page-header">
+				  <h3><a href="#">我的第二篇博客</a></h3>
+				  <h6 class="text-muted">文章发表于 {{.Created}}，共有 {{.Views}} 次浏览， {{.ReplyCount}} 个评论</h6>
+				  <p>
+				  	这是测试文本
+				  </p>
+				</div>
+	        </div>
+	        <div class="col-md-2 category text-center">
+	        	<div class="panel panel-primary">
+  					<div class="panel-heading">
+    					<h3 class="panel-title">文章分类</h3>
+	        		</div>
+	        		<div class="panel-body">
+	    				<ul class="list-unstyled">
+			        		<li><a href="#">go</a></li>
+			        		<li><a href="#">java</a></li>
+			        		<li><a href="#">ios</a></li>
+		        		</ul>
+  					</div>
+	        	
+	        </div>
+        </div>
+    </div>
+{{template "footer" .}}
