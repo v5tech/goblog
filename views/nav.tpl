@@ -18,9 +18,9 @@
                     <li {{if .IsTopic}}class="active"{{end}}><a href="/topic/add">文章</a></li>
                     <li {{if .IsCategory}}class="active"{{end}}><a href="/category">分类</a></li>
                 </ul>
-                <ul class="nav navbar-nav navbar-right">
+                <ul class="nav navbar-nav navbar-right" style="margin-right: 10px;">
                     {{if .IsLogin}}
-                        <li><a href="/user/{{.Username}}" class="fa fa-lock"> {{.Nickname}}</a></li>
+                        <li><a href="/user/view/{{.Username}}" class="fa fa-lock"> {{.Nickname}}</a></li>
                         <li><a href="/logout" class="fa fa-lock"> 退出</a></li>
                     {{else}}
                         <li><a href="/login" class="fa fa-user"> 登录</a></li>

@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// 注册数据库信息
 func RegisterDB() {
 	url := beego.AppConfig.String("url")
 	orm.RegisterModel(new(Topic), new(Category), new(User))
@@ -14,6 +15,7 @@ func RegisterDB() {
 	orm.RegisterDataBase("default", "mysql", url, 30) //注册数据库
 }
 
+// User结构体
 type User struct {
 	Id        int64     `orm:"auto" form:"id"`
 	Username  string    `orm:"size(20)" valid:"Required" form:"username"`
@@ -26,9 +28,10 @@ type User struct {
 	Nickname  string    `valid:"Required" orm:"size(20)" form:"nickname"`
 }
 
+// Topic结构体
 type Topic struct {
 	Id         int64     `orm:"auto" form:"id"`
-	Title      string    `valid:"Required" orm:"size(20);index" form:"title"`
+	Title      string    `valid:"Required" orm:"size(100);index" form:"title"`
 	Content    string    `valid:"Required" orm:"size(5000);index" form:"content"`
 	Category   string    `valid:"Required" orm:"size(100);index" form:"category"`
 	Views      int64     //浏览次数
@@ -39,52 +42,93 @@ type Topic struct {
 	Updated    time.Time `orm:"index"`
 }
 
+// Category结构体
 type Category struct {
 	Id           int64     `orm:"auto" form:"id"`
-	CategoryName string    `orm:"size(30);index" index`
+	CategoryName string    `orm:"size(30);index" form:"categoryname"`
 	Created      time.Time `orm:"index"`
 }
 
-/**
- * 查询所有的分类
- */
+// 查询所有的分类
 func GetAllCategory() []*Category {
 	o := orm.NewOrm()
 	categorys := make([]*Category, 0, 10)
-	_, err := o.QueryTable("category").OrderBy("-created").All(&categorys)
+	_, err := o.QueryTable("category").All(&categorys)
 	if err != nil {
-		beego.Error("获取所有的分类出错:" + err.Error())
+		beego.Error("获取所有的分类失败:" + err.Error())
 		return nil
 	}
 	return categorys
 }
 
-/**
- * 保存分类
- */
-
-func AddCategory(categoryName string) bool {
+// 删除文章分类
+func DeleteCategory(id int64) bool {
 	o := orm.NewOrm()
 	category := &Category{}
-	category.CategoryName = categoryName
-	category.Created = time.Now()
-	_, err := o.Insert(category)
+	err := o.QueryTable("category").Filter("id", id).One(category)
 	if err != nil {
-		beego.Error("保存分类出错:" + err.Error())
+		beego.Error("根据文章分类id查询文章分类失败:" + err.Error())
+		return false
+	}
+	_, err = o.Delete(category)
+	if err != nil {
+		beego.Error("根据文章分类id删除文章分类失败:" + err.Error())
 		return false
 	}
 	return true
 }
 
-/**
- * 根据分类名称查询分类
- */
+// 保存分类
+func AddCategory(categoryName string) bool {
+	o := orm.NewOrm()
+	category := &Category{CategoryName: categoryName, Created: time.Now()}
+	//category.CategoryName = categoryName
+	//category.Created = time.Now()
+	_, err := o.Insert(category)
+	if err != nil {
+		beego.Error("保存分类失败:" + err.Error())
+		return false
+	}
+	return true
+}
+
+// 修改文章分类
+
+func ModifyCategory(category *Category) bool {
+	o := orm.NewOrm()
+	cat := &Category{}
+	err := o.QueryTable("category").Filter("id", category.Id).One(cat)
+	if err != nil {
+		beego.Error("获取文章分类失败:" + err.Error())
+	}
+	cat.CategoryName = category.CategoryName
+	_, err = o.Update(cat)
+	if err != nil {
+		beego.Error("修改文章分类失败:" + err.Error())
+		return false
+	}
+	return true
+}
+
+// 根据分类id查询分类
+func GetCategoryById(id int64) *Category {
+	o := orm.NewOrm()
+	category := &Category{}
+	err := o.QueryTable("category").Filter("id", id).One(category)
+	if err != nil {
+		beego.Error("获取文章分类失败:" + err.Error())
+		return nil
+	}
+	return category
+}
+
+// 根据分类名称查询分类
 func GetCategoryByName(categoryName string) bool {
 	o := orm.NewOrm()
 	category := &Category{}
 	err := o.QueryTable("category").Filter("category_name", categoryName).One(category)
 	if err != nil {
-		beego.Error("获取文章分类出错:" + err.Error())
+		beego.Error("获取文章分类失败:" + err.Error())
 		return false
 	}
 	if category != nil {
@@ -93,111 +137,93 @@ func GetCategoryByName(categoryName string) bool {
 	return false
 }
 
-/**
- * 发表博客
- */
-
+// 发表文章
 func AddTopic(topic *Topic) error {
 	o := orm.NewOrm()
 	_, err := o.Insert(topic)
 	if err != nil {
-		beego.Error("发表博客出错:" + err.Error())
+		beego.Error("发表文章失败:" + err.Error())
 		return err
 	}
 	return nil
 }
 
-/**
- * 获取所有的文章
- */
+// 获取所有的文章
 func GetAllTopics() ([]*Topic, error) {
 	o := orm.NewOrm()
 	topics := make([]*Topic, 0, 10)
-	_, err := o.QueryTable("topic").OrderBy("-created").All(&topics) //查询所有的文章 按降序排列
+	_, err := o.QueryTable("topic").OrderBy("-created").All(&topics) // 查询所有的文章 按降序排列
 	return topics, err
 }
 
-/**
- * 根据文章id删除文章
- */
+// 根据文章id删除文章
 func DeleteTopic(id int64) bool {
 	o := orm.NewOrm()
 	topic := new(Topic)
 	topic.Id = id
 	err := o.Read(topic)
 	if err != nil {
-		beego.Error("查询文章出错:" + err.Error())
+		beego.Error("查询文章失败:" + err.Error())
 		return false
 	}
-	n, err := o.Delete(topic)
+	_, err = o.Delete(topic)
 	if err != nil {
-		beego.Error("删除文章出错:" + err.Error())
+		beego.Error("删除文章失败:" + err.Error())
 		return false
 	}
-	return n == 1
+	return true
 }
 
-/**
- * 根据文章id查看文章
- */
-
+// 根据文章id查看文章
 func ViewTopicById(id int64) *Topic {
 	o := orm.NewOrm()
 	topic := &Topic{Id: id}
 	err := o.Read(topic)
 	if err != nil {
-		beego.Error("查看文章出错:" + err.Error())
+		beego.Error("查看文章失败:" + err.Error())
 		return nil
 	}
 	topic.Views++
 	_, err = o.Update(topic)
 	if err != nil {
-		beego.Error("更新文章浏览次数出错:" + err.Error())
+		beego.Error("更新文章浏览次数失败:" + err.Error())
 	}
 	return topic
 }
 
-/**
- * 用户注册
- */
+// 用户注册
 func RegisterUser(user *User) error {
 	o := orm.NewOrm()
 	_, err := o.Insert(user)
 	return err
 }
 
-/**
- * 检查用户名是否存在
- */
+// 检查用户名是否存在
 func CheckUser(username string) bool {
 	o := orm.NewOrm()
 	user := &User{}
 	err := o.QueryTable(new(User)).Filter("username", username).One(user)
 	if err != nil {
-		beego.Error("检查用户名是否存在出错:" + err.Error())
+		beego.Error("检查用户名是否存在失败:" + err.Error())
 		return false
 	}
 	return user != nil
 }
 
-/**
- * 用户登录
- */
+// 用户登录
 func Login(user *User) *User {
 	u := new(User)
 	o := orm.NewOrm()
 	qs := o.QueryTable("user")
 	err := qs.Filter("username", user.Username).Filter("password", user.Password).One(u)
 	if err != nil {
-		beego.Error("用户登录验证出错:" + err.Error())
+		beego.Error("用户登录验证失败:" + err.Error())
 		return nil
 	}
 	return u
 }
 
-/**
- * 修改用户信息
- */
+// 修改用户信息
 func UserModify(user *User) bool {
 	o := orm.NewOrm()
 
@@ -209,48 +235,44 @@ func UserModify(user *User) bool {
 		return false
 	}
 
-	u.Lastlogin = user.Lastlogin //修改用户最后登录时间
-	u.Loginip = user.Loginip     //修改用户最后登录ip
+	u.Lastlogin = user.Lastlogin // 修改用户最后登录时间
 
-	num, err := o.Update(u)
+	u.Loginip = user.Loginip // 修改用户最后登录ip
+
+	_, err = o.Update(u)
 
 	if err != nil {
 		return false
 	}
 
-	return num == 1
+	return true
 }
 
-/**
- * 根据用户名获取用户信息
- */
+// 根据用户名获取用户信息
 func GetUserInfo(username string) (*User, error) {
 	o := orm.NewOrm()
 	user := new(User)
 	err := o.QueryTable("user").Filter("username", username).One(user)
 	if err != nil {
+		beego.Error("根据用户名获取用户信息失败:" + err.Error())
 		return nil, err
 	}
 	return user, nil
 }
 
-/**
- * 删除用户
- */
-
+// 删除用户
 func DeleteUser(id int64) bool {
 	o := orm.NewOrm()
 	user := User{Id: id}
 	err := o.Read(&user)
 	if err != nil {
-		beego.Error("读取用户信息出错:" + err.Error())
+		beego.Error("读取用户信息失败:" + err.Error())
 		return false
 	}
-	num, err := o.Delete(&user)
+	_, err = o.Delete(&user)
 	if err != nil {
-		beego.Error("删除用户出错:" + err.Error())
+		beego.Error("删除用户失败:" + err.Error())
 		return false
 	}
-	beego.Info(num)
-	return num == 1
+	return true
 }

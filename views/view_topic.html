@@ -5,6 +5,8 @@
 <body>
     {{template "nav" .}}
     <div class="container log-reg">
+        {{template "msgbox" .}}
+
         {{$IsLogin := .IsLogin}}
         {{with .Topic}}
         <h3>{{.Title}}</h3>
@@ -13,7 +15,7 @@
             <a href="/topic/delete/{{.Id}}" class="btn btn-default">删除</a>
         {{end}}
         <a href="/" class="btn btn-default">返回</a>
-        <h6 class="text-muted"><a href="/user/{{.Username}}">{{.Username}}</a> 发表于 {{.Created}}，共有 {{.Views}} 次浏览， {{.ReplyCount}} 个评论</h6>
+        <h6 class="text-muted"><a href="/user/view/{{.Username}}">{{.Username}}</a> 发表于 {{.Created}}，共有 {{.Views}} 次浏览， {{.ReplyCount}} 个评论</h6>
         <p>
             {{.Content}}
         </p>
