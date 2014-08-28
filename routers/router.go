@@ -20,6 +20,14 @@ func init() {
 
 	beego.Router("/register", &controllers.UserController{}, "post:RegisterAction") //用户注册Action
 
+	beego.Router("/getpwd", &controllers.UserController{}, "get:GetPwd") //密码找回页
+
+	beego.Router("/getpwd", &controllers.UserController{}, "post:GetPwdAction") //密码找回Action
+
+	beego.Router("/modifypwd", &controllers.UserController{}, "get:ModifyPWD") //密码找回修改密码页
+
+	beego.Router("/modifypwd", &controllers.UserController{}, "post:ModifyPWDAction") //密码找回修改密码Action
+
 	beego.Router("/user/delete/:id:int", &controllers.UserController{}, "get:DeleteUser") //删除用户
 
 	beego.Router("/user/view/:username:string", &controllers.UserController{}, "get:GetUserInfo") //获取用户详情

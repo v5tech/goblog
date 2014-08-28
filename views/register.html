@@ -1,7 +1,6 @@
 {{template "header"}}
 <title>{{.Title}}</title>
 </head>
-
 <body>
     {{template "nav" .}}
     <div class="container log-reg">
@@ -10,27 +9,27 @@
         <form role="form" method="post" action="/register">
             <div class="form-group">
                 <label>用户名</label>
-                <input type="text" class="form-control" placeholder="请输入用户名" name="username">
+                <input type="text" class="form-control" placeholder="请输入用户名" name="username" required>
             </div>
             <div class="form-group">
                 <label>昵称</label>
-                <input type="text" class="form-control" placeholder="请输入昵称" name="nickname">
+                <input type="text" class="form-control" placeholder="请输入昵称" name="nickname" required>
             </div>
             <div class="form-group">
                 <label>密 码</label>
-                <input type="password" class="form-control" placeholder="请输入密码" name="password">
+                <input type="password" class="form-control" placeholder="请输入密码" name="password" required>
             </div>
             <div class="form-group">
                 <label>电子邮件</label>
-                <input type="email" class="form-control" placeholder="请输电子邮件" name="email">
+                <input type="email" class="form-control" placeholder="请输电子邮件" name="email" required email>
             </div>
             <div class="form-group">
                 <label>验证码</label>
-                <input type="text" class="form-control" placeholder="请输入密码" name="captcha">
+                <input type="text" class="form-control" placeholder="请输入密码" name="captcha" required>
                 <img id="captcha" src="/captcha" alt="Captcha image" onclick="javascript:reload();" class="captcha" />
             </div>
             <button type="submit" class="btn btn-primary">注册</button>
             <a class="btn btn-default" href="/">取消</a>
         </form>
     </div>
-    {{template "footer"}}
+{{template "footer"}}

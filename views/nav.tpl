@@ -25,6 +25,7 @@
                     {{else}}
                         <li><a href="/login" class="fa fa-user"> 登录</a></li>
                         <li><a href="/register" class="fa fa-user"> 注册</a></li>
+                        <li><a href="/getpwd" class="fa fa-user"> 找回密码</a></li>
                     {{end}}
                 </ul>
             </div>

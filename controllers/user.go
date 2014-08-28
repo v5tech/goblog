@@ -1,9 +1,13 @@
 package controllers
 
 import (
+	"code.google.com/p/go-uuid/uuid"
 	"github.com/astaxie/beego"
 	"github.com/dchest/captcha"
+	"github.com/jordan-wright/email"
 	"goblog/models"
+	"net/smtp"
+	"net/textproto"
 	"strconv"
 	"time"
 )
@@ -49,6 +53,170 @@ func (this *UserController) Login() {
 
 }
 
+// 密码找回页
+func (this *UserController) GetPwd() {
+	beego.ReadFromRequest(&this.Controller)
+	this.Data["Title"] = "找回密码"
+	this.TplNames = "getpwd.html" //密码找回页
+}
+
+// 密码找回Action
+func (this *UserController) GetPwdAction() {
+	flash := beego.NewFlash()
+	username := this.GetString("username")      //获取用户名
+	mail := this.GetString("email")             //获取电子邮件
+	if models.CheckUserExists(username, mail) { //根据用户名和电子邮件验证用户是否存在
+
+		var uid, exprise string
+
+		//计算24小时后的时间并格式化
+		exprise = time.Now().Local().Add(time.Hour * 24).Format("2006-01-02 15:04:05") //24小时后
+
+		uid = uuid.New() //生成一个uuid标识串
+
+		url := "http://192.168.9.65:8081/modifypwd?username=" + username + "&uuid=" + uid
+
+		content := "<strong>亲爱的" + username + ":</strong><p>系统检测到你的找回密码请求,请点击该链接或拷贝到浏览器以继续。24小时内有效!<a href=\"" + url + "\" target=\"_blank\">" + url + "</a></p>"
+
+		user := &models.User{
+			Username: username,
+			Email:    mail,
+			Uuid:     uid,
+			Exprise:  exprise,
+		}
+
+		if models.UpdateUser(user) { //更新uuid和密码找回失效时间到数据库中
+			//用户存在,发取回密码的邮件
+			e := &email.Email{
+				To:      []string{mail},
+				From:    "sxyx2008@163.com",
+				Subject: "找回密码,24小时内有效",
+				HTML:    []byte(content),
+				Headers: textproto.MIMEHeader{},
+			}
+			err := e.Send("smtp.163.com:25", smtp.PlainAuth("", "username", "password", "smtp.163.com")) //应用环境中需要替换username和password为有效的值
+			if err != nil {
+				beego.Error("邮件发送失败:" + err.Error())
+				flash.Error("邮件发送失败,请稍后再试!")
+				flash.Store(&this.Controller)
+				this.Redirect("/getpwd", 302) //重定向到密码找回页
+			} else {
+				flash.Notice("密码找回邮件已发送,请到邮箱中查看!")
+				flash.Store(&this.Controller)
+				this.Redirect("/getpwd", 302) //重定向到密码找回页
+			}
+		} else {
+			flash.Error("请求失败!")
+			flash.Store(&this.Controller)
+			this.Redirect("/getpwd", 302) //重定向到密码找回页
+			return
+		}
+
+	} else {
+		flash.Error("该用户不存在!")
+		flash.Store(&this.Controller)
+		this.Redirect("/getpwd", 302) //重定向到密码找回页
+		return
+	}
+}
+
+// 密码找回修改密码页
+func (this *UserController) ModifyPWD() {
+
+	beego.ReadFromRequest(&this.Controller) //从Request中解析flash数据
+	flash := beego.NewFlash()
+	username := this.GetString("username")
+	uid := this.GetString("uuid")
+	if username == "" || uid == "" {
+
+		flash.Error("非法的请求!")
+		flash.Store(&this.Controller)
+
+		//this.Redirect("/modifypwd", 302) //重定向到密码找回修改密码页
+	} else {
+
+		user := &models.User{
+			Username: username,
+			Uuid:     uid,
+		}
+
+		//检查是否非法请求
+
+		u := models.QueryUserByUsernameAndUUID(username, uid) //根据uuid和用户名查询用户信息
+
+		if u != nil {
+
+			exprise := u.Exprise //获取过期时间
+
+			nowtime := time.Now().Local() //获取当前时间
+
+			exprisetime, err := time.Parse("2006-01-02 15:04:05", exprise) //时间字符串转化
+
+			if err != nil {
+				beego.Error("解析时间失败:" + err.Error())
+			}
+
+			//判断链接是否有效
+
+			if exprisetime.Before(nowtime) { //判断失效时间是否在当前时间之前 为true表示连接已失效
+				flash.Error("该请求已失效!")
+				flash.Store(&this.Controller)
+			}
+
+			this.Data["User"] = user
+
+		} else {
+			flash.Error("非法的请求!")
+			flash.Store(&this.Controller)
+			// this.Redirect("/modifypwd", 302) //重定向到密码找回修改密码页
+		}
+
+	}
+	this.Data["Title"] = "密码重置"
+	this.TplNames = "modify_pwd.html"
+	return
+}
+
+// 密码找回修改密码Action
+func (this *UserController) ModifyPWDAction() {
+
+	flash := beego.NewFlash()
+	username := this.GetString("username")
+	uid := this.GetString("uuid")
+
+	password := this.GetString("password")
+	password = MD5(password) //将密码以md5加密存放
+
+	if username == "" || uid == "" || password == "" {
+		flash.Error("非法的请求!")
+		flash.Store(&this.Controller)
+		this.Redirect("/modifypwd", 302) //重定向到密码找回修改密码页
+	}
+
+	user := &models.User{
+		Username: username,
+		Uuid:     uid,
+		Password: password,
+	}
+
+	if models.UpdatePassWord(user) {
+
+		user.Exprise = "" //将过期时间重置
+		user.Uuid = ""    //将uuid重置
+
+		models.UpdateUser(user) //密码重置成功后,重置标识取回密码的用户信息
+
+		flash.Notice("密码修改成功!")
+		flash.Store(&this.Controller)
+		this.Redirect("/login", 302) //重定向到密码找回修改密码页
+
+	} else {
+		flash.Error("密码修改失败!")
+		flash.Store(&this.Controller)
+		this.Redirect("/modifypwd", 302) //重定向到密码找回修改密码页
+	}
+}
+
 // 用户注册页
 func (this *UserController) Register() {
 
@@ -72,8 +240,8 @@ func (this *UserController) RegisterAction() {
 	}
 
 	user.Password = MD5(user.Password)   //将密码以MD5加密存储
-	user.Registed = time.Now()           //用户注册时间
-	user.Lastlogin = time.Now()          //用户最后登录时间
+	user.Registed = time.Now().Local()   //用户注册时间
+	user.Lastlogin = time.Now().Local()  //用户最后登录时间
 	user.Registeip = this.Ctx.Input.IP() //用户注册的ip
 
 	captchaCode := this.Input().Get("captcha")
@@ -146,8 +314,8 @@ func (this *UserController) LoginAction() {
 			this.Ctx.SetCookie("username", user.Username, maxAge, "/") //设置cookie
 			this.Ctx.SetCookie("password", user.Password, maxAge, "/") //设置cookie
 
-			u.Lastlogin = time.Now()        //设置最后登录时间
-			u.Loginip = this.Ctx.Input.IP() //获取客户端IP
+			u.Lastlogin = time.Now().Local() //设置最后登录时间
+			u.Loginip = this.Ctx.Input.IP()  //获取客户端IP
 
 			if !models.UserModify(u) { //用户登录成功后更新最后登录时间
 				beego.Error("更新用户最后登录时间失败")

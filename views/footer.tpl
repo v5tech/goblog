@@ -1,5 +1,5 @@
 {{define "footer"}}
-<footer>
+    <footer>
         <div class="container">
             <p class="text-center">Beego © 雪山飞鹄</p>
             <address class="text-center">

@@ -26,6 +26,8 @@ type User struct {
 	Lastlogin time.Time `orm:"index"`    //最后登录时间
 	Loginip   string    `orm:"size(20)"` //最后登录ip
 	Nickname  string    `valid:"Required" orm:"size(20)" form:"nickname"`
+	Uuid      string    `orm:"size(64)"` //用于验证找回密码,标识用户身份
+	Exprise   string    //找回密码失效时间
 }
 
 // Topic结构体
@@ -81,9 +83,9 @@ func DeleteCategory(id int64) bool {
 // 保存分类
 func AddCategory(categoryName string) bool {
 	o := orm.NewOrm()
-	category := &Category{CategoryName: categoryName, Created: time.Now()}
+	category := &Category{CategoryName: categoryName, Created: time.Now().Local()}
 	//category.CategoryName = categoryName
-	//category.Created = time.Now()
+	//category.Created = time.Now().Local()
 	_, err := o.Insert(category)
 	if err != nil {
 		beego.Error("保存分类失败:" + err.Error())
@@ -223,6 +225,36 @@ func Login(user *User) *User {
 	return u
 }
 
+// 根据用户名和uuid更新密码
+
+func UpdatePassWord(u *User) bool {
+
+	o := orm.NewOrm()
+	p, err := o.Raw("UPDATE user SET password = ? where username = ? and uuid = ? ").Prepare()
+	_, err = p.Exec(u.Password, u.Username, u.Uuid)
+	if err != nil {
+		beego.Error(err.Error())
+		return false
+	}
+	defer p.Close()
+	return true //修改成功
+
+}
+
+// 密码找回时更新用户信息
+func UpdateUser(u *User) bool {
+	//用于找回密码时更新uuid和找回密码失效时间
+	o := orm.NewOrm()
+	p, err := o.Raw(" UPDATE user SET uuid = ?,exprise = ? where username = ? ").Prepare()
+	_, err = p.Exec(u.Uuid, u.Exprise, u.Username)
+	if err != nil {
+		beego.Error(err.Error())
+		return false
+	}
+	defer p.Close()
+	return true //修改成功
+}
+
 // 修改用户信息
 func UserModify(user *User) bool {
 	o := orm.NewOrm()
@@ -246,6 +278,24 @@ func UserModify(user *User) bool {
 	}
 
 	return true
+}
+
+//根据用户名和uuid查询用户信息
+func QueryUserByUsernameAndUUID(username, uuid string) *User {
+	o := orm.NewOrm()
+	user := new(User)
+	err := o.QueryTable("user").Filter("username", username).Filter("uuid", uuid).One(user)
+	if err != nil {
+		beego.Error("根据用户名和uuid查询用户失败！" + err.Error())
+		return nil
+	}
+	return user
+}
+
+// 根据用户名和电子邮件查询用户是否存在
+func CheckUserExists(username, email string) bool {
+	o := orm.NewOrm()
+	return o.QueryTable("user").Filter("username", username).Filter("email", email).Exist()
 }
 
 // 根据用户名获取用户信息

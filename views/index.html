@@ -29,6 +29,7 @@
                 {{end}}
             </div>
             <div class="col-md-2 category text-center">
+                {{if .Categories}}
                 <div class="panel panel-primary">
                     <div class="panel-heading">
                         <h3 class="panel-title">文章分类</h3>
@@ -40,8 +41,8 @@
                         {{end}}
                         </ul>
                     </div>
-
                 </div>
+                {{end}}
             </div>
         </div>
         {{template "footer" .}}

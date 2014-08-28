@@ -95,8 +95,8 @@ func (this *TopicController) AddTopic() {
 			return
 		}
 
-		topic.Created = time.Now() //设置创建时间
-		topic.Updated = time.Now() //设置更新时间
+		topic.Created = time.Now().Local() //设置创建时间
+		topic.Updated = time.Now().Local() //设置更新时间
 
 		if this.GetSession("user") != nil {
 			topic.Author = this.GetSession("user").(*models.User).Nickname   //设置作者
