@@ -20,7 +20,7 @@
                 </ul>
                 <ul class="nav navbar-nav navbar-right" style="margin-right: 10px;">
                     {{if .IsLogin}}
-                        <li><a href="/user/view/{{.Username}}" class="fa fa-lock"> {{.Nickname}}</a></li>
+                        <li><a href="/user/view/{{.Username}}" class="fa fa-user"> {{.Nickname}}</a></li>
                         <li><a href="/logout" class="fa fa-lock"> 退出</a></li>
                     {{else}}
                         <li><a href="/login" class="fa fa-user"> 登录</a></li>

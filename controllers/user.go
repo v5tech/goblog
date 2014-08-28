@@ -74,7 +74,7 @@ func (this *UserController) GetPwdAction() {
 
 		uid = uuid.New() //生成一个uuid标识串
 
-		url := "http://192.168.9.65:8081/modifypwd?username=" + username + "&uuid=" + uid
+		url := "http://127.0.0.1:8081/modifypwd?username=" + username + "&uuid=" + uid
 
 		content := "<strong>亲爱的" + username + ":</strong><p>系统检测到你的找回密码请求,请点击该链接或拷贝到浏览器以继续。24小时内有效!<a href=\"" + url + "\" target=\"_blank\">" + url + "</a></p>"
 
@@ -94,7 +94,7 @@ func (this *UserController) GetPwdAction() {
 				HTML:    []byte(content),
 				Headers: textproto.MIMEHeader{},
 			}
-			err := e.Send("smtp.163.com:25", smtp.PlainAuth("", "username", "password", "smtp.163.com")) //应用环境中需要替换username和password为有效的值
+			err := e.Send("smtp.163.com:25", smtp.PlainAuth("", "username", "******", "smtp.163.com")) //应用环境中需要替换username和password为有效的值
 			if err != nil {
 				beego.Error("邮件发送失败:" + err.Error())
 				flash.Error("邮件发送失败,请稍后再试!")
@@ -158,7 +158,7 @@ func (this *UserController) ModifyPWD() {
 
 			//判断链接是否有效
 
-			if exprisetime.Before(nowtime) { //判断失效时间是否在当前时间之前 为true表示连接已失效
+			if nowtime.After(exprisetime) { //判断当前时间是否在失效时间之后 为true表示连接已失效
 				flash.Error("该请求已失效!")
 				flash.Store(&this.Controller)
 			}
@@ -254,8 +254,7 @@ func (this *UserController) RegisterAction() {
 		this.Redirect("/register", 302) //验证码不正确,重定向到登录页
 		return
 	} else {
-		isExists := models.CheckUser(user.Username) //判断该用户是否已经存在
-		if isExists {
+		if models.CheckUser(user.Username) { //判断该用户是否已经存在
 			flash.Error("该用户已存在!")
 			flash.Store(&this.Controller)
 			this.Redirect("/register", 302) //该用户已存在,重定向到注册页
@@ -318,7 +317,7 @@ func (this *UserController) LoginAction() {
 			u.Loginip = this.Ctx.Input.IP()  //获取客户端IP
 
 			if !models.UserModify(u) { //用户登录成功后更新最后登录时间
-				beego.Error("更新用户最后登录时间失败")
+				beego.Error("更新用户最后登录时间失败" + err.Error())
 				flash.Error("更新用户最后登录时间失败!")
 				flash.Store(&this.Controller)
 			}

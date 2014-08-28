@@ -203,18 +203,12 @@ func RegisterUser(user *User) error {
 // 检查用户名是否存在
 func CheckUser(username string) bool {
 	o := orm.NewOrm()
-	user := &User{}
-	err := o.QueryTable(new(User)).Filter("username", username).One(user)
-	if err != nil {
-		beego.Error("检查用户名是否存在失败:" + err.Error())
-		return false
-	}
-	return user != nil
+	return o.QueryTable("user").Filter("username", username).Exist()
 }
 
 // 用户登录
 func Login(user *User) *User {
-	u := new(User)
+	u := &User{}
 	o := orm.NewOrm()
 	qs := o.QueryTable("user")
 	err := qs.Filter("username", user.Username).Filter("password", user.Password).One(u)
@@ -258,25 +252,11 @@ func UpdateUser(u *User) bool {
 // 修改用户信息
 func UserModify(user *User) bool {
 	o := orm.NewOrm()
-
-	u := &User{}
-
-	err := o.QueryTable("user").Filter("username", user.Username).Filter("password", user.Password).One(u) //使用用户名和密码查询用户信息
-
+	_, err := o.Update(user)
 	if err != nil {
+		beego.Error("修改用户信息失败!" + err.Error())
 		return false
 	}
-
-	u.Lastlogin = user.Lastlogin // 修改用户最后登录时间
-
-	u.Loginip = user.Loginip // 修改用户最后登录ip
-
-	_, err = o.Update(u)
-
-	if err != nil {
-		return false
-	}
-
 	return true
 }
 
