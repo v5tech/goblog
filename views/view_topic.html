@@ -17,7 +17,7 @@
             {{end}}
         {{end}}
         <a href="/" class="btn btn-default">返回</a>
-        <h6 class="text-muted"><a href="/user/view/{{.Username}}">{{.Username}}</a> 发表于 {{.Created}}，共有 {{.Views}} 次浏览， {{.ReplyCount}} 个评论 <a href="/topic/view/{{.Category}}">{{.Category}}</a></h6>
+        <h6 class="text-muted"><a href="/user/view/{{.Username}}">{{.Username}}</a> 发表于 {{dateformat .Created "2006-01-02 15:04:05"}}，共有 {{.Views}} 次浏览， {{.ReplyCount}} 个评论 <a href="/topic/view/{{.Category}}">{{.Category}}</a></h6>
         <p>
             <script type="text/javascript">
                 (function(){

@@ -21,7 +21,7 @@
                 <div class="page-header">
                     <h3><a href="/topic/view/{{$topic.Id}}">{{$topic.Title}}</a>
                     </h3>
-                    <h6 class="text-muted">文章发表于 {{$topic.Created}}，共有 {{$topic.Views}} 次浏览， {{$topic.ReplyCount}} 个评论</h6>
+                    <h6 class="text-muted">文章发表于 {{dateformat $topic.Created "2006-01-02 15:04:05"}}，共有 {{$topic.Views}} 次浏览， {{$topic.ReplyCount}} 个评论</h6>
                     <p id="{{$topic.Id}}">
                         <script type="text/javascript">
                         (function(){

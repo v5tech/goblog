@@ -28,9 +28,9 @@
                         <td>{{.Username}}</td>
                         <td>{{.Nickname}}</td>
                         <td>{{.Email}}</td>
-                        <td>{{.Registed}}</td>
+                        <td>{{dateformat .Registed "2006-01-02 15:04:05"}}</td>
                         <td>{{.Registeip}}</td>
-                        <td>{{.Lastlogin}}</td>
+                        <td>{{dateformat .Lastlogin "2006-01-02 15:04:05"}}</td>
                         <td>{{.Loginip}}</td>
                     </tr>
                 </tbody>

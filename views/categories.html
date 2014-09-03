@@ -25,7 +25,7 @@
                     <tr>
                         <td>{{$category.Id}}</td>
                         <td>{{$category.CategoryName}}</td>
-                        <td>{{$category.Created}}</td>
+                        <td>{{dateformat $category.Created "2006-01-02 15:04:05"}}</td>
                         <td>
                             <a class="btn btn-default" href="javascript:modify('{{$category.Id}}','{{$category.CategoryName}}');">修改</a>
                             <a class="btn btn-default" href="/category/delete/{{$category.Id}}">删除</a>
