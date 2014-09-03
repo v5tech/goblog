@@ -43,7 +43,7 @@ func (this *CategoryController) AddCategory() {
 			return
 		}
 
-		if !models.GetCategoryByName(category.CategoryName) { //查询该分类是否存在
+		if nil == models.GetCategoryByName(category.CategoryName) { //查询该分类是否存在
 			//不存在,则保存该分类
 			if !models.AddCategory(category.CategoryName) {
 				beego.Error("添加文章分类失败:" + err.Error())

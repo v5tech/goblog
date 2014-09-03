@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 	"goblog/models"
@@ -41,11 +39,4 @@ func checkAccountSession(ctl *beego.Controller) bool {
 	} else {
 		return false
 	}
-}
-
-// 生成该字符串的MD5串
-func MD5(str string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(str))
-	return hex.EncodeToString(hasher.Sum(nil))
 }

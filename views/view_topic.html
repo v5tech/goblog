@@ -4,20 +4,26 @@
 
 <body>
     {{template "nav" .}}
-    <div class="container log-reg">
+    <div class="container">
         {{template "msgbox" .}}
-
         {{$IsLogin := .IsLogin}}
+        {{$Username := .Username}}
         {{with .Topic}}
         <h3>{{.Title}}</h3>
         {{if $IsLogin}}
+            {{if eq $Username .Username }}
             <a href="/topic/modify/{{.Id}}" class="btn btn-default">修改</a>
             <a href="/topic/delete/{{.Id}}" class="btn btn-default">删除</a>
+            {{end}}
         {{end}}
         <a href="/" class="btn btn-default">返回</a>
-        <h6 class="text-muted"><a href="/user/view/{{.Username}}">{{.Username}}</a> 发表于 {{.Created}}，共有 {{.Views}} 次浏览， {{.ReplyCount}} 个评论</h6>
+        <h6 class="text-muted"><a href="/user/view/{{.Username}}">{{.Username}}</a> 发表于 {{.Created}}，共有 {{.Views}} 次浏览， {{.ReplyCount}} 个评论 <a href="/topic/view/{{.Category}}">{{.Category}}</a></h6>
         <p>
-            {{.Content}}
+            <script type="text/javascript">
+                (function(){
+                    $("h6.text-muted+p").html(markdown.toHTML({{.Content}}));
+                })();
+            </script>
         </p>
         {{end}}
     </div>

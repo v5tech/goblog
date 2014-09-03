@@ -38,7 +38,13 @@ func init() {
 
 	beego.Router("/topic/view/:id:int", &controllers.TopicController{}, "get:ViewTopic") //查看文章
 
+	beego.Router("/topic/view/:category:string", &controllers.TopicController{}, "get:ViewTopicByCategoryName") //根据文章查看文章列表
+
 	beego.Router("/topic/delete/:id:int", &controllers.TopicController{}, "get:DeleteTopic") //删除文章
+
+	beego.Router("/topic/modify/:id:int", &controllers.TopicController{}, "get:ModifyTopic") //修改文章页
+
+	beego.Router("/topic/modify/:id:int", &controllers.TopicController{}, "post:ModifyTopicAction") //修改文章Action
 
 	beego.AutoRouter(&controllers.TopicController{})
 

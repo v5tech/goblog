@@ -8,7 +8,15 @@ import (
 )
 
 func init() {
-	models.RegisterDB()
+	RegisterDB()
+}
+
+// 注册数据库信息
+func RegisterDB() {
+	url := beego.AppConfig.String("url")
+	orm.RegisterModel(new(models.Topic), new(models.Category), new(models.User))
+	orm.RegisterDriver("mysql", orm.DR_MySQL)
+	orm.RegisterDataBase("default", "mysql", url, 30) //注册数据库
 }
 
 func main() {

@@ -18,17 +18,14 @@ type UserController struct {
 
 // 生成验证码
 func (this *UserController) NewCaptcha() {
-
 	captchaStr := captcha.New()                                                                  //生成唯一的id
 	this.SetSession("captchaStr", captchaStr)                                                    //将该字符串放入session中
 	captcha.WriteImage(this.Ctx.ResponseWriter, captchaStr, captcha.StdWidth, captcha.StdHeight) //将验证码输出到浏览器
 	return
-
 }
 
 // 登出
 func (this *UserController) Logout() {
-
 	if checkAccountSession(&this.Controller) { //判断用户是否登录
 		this.Ctx.SetCookie("username", "", -1, "/") //设置cookie失效
 		this.Ctx.SetCookie("password", "", -1, "/") //设置cookie失效
@@ -41,16 +38,6 @@ func (this *UserController) Logout() {
 	}
 	this.Redirect("/", 302) //重定向到主页
 	return
-
-}
-
-// 登录页
-func (this *UserController) Login() {
-
-	beego.ReadFromRequest(&this.Controller)
-	this.Data["Title"] = "用户登录"
-	this.TplNames = "login.html" //登录页
-
 }
 
 // 密码找回页
@@ -132,7 +119,6 @@ func (this *UserController) ModifyPWD() {
 		flash.Error("非法的请求!")
 		flash.Store(&this.Controller)
 
-		//this.Redirect("/modifypwd", 302) //重定向到密码找回修改密码页
 	} else {
 
 		user := &models.User{
@@ -168,7 +154,6 @@ func (this *UserController) ModifyPWD() {
 		} else {
 			flash.Error("非法的请求!")
 			flash.Store(&this.Controller)
-			// this.Redirect("/modifypwd", 302) //重定向到密码找回修改密码页
 		}
 
 	}
@@ -185,7 +170,7 @@ func (this *UserController) ModifyPWDAction() {
 	uid := this.GetString("uuid")
 
 	password := this.GetString("password")
-	password = MD5(password) //将密码以md5加密存放
+	password = models.MD5(password) //将密码以md5加密存放
 
 	if username == "" || uid == "" || password == "" {
 		flash.Error("非法的请求!")
@@ -239,10 +224,10 @@ func (this *UserController) RegisterAction() {
 		return
 	}
 
-	user.Password = MD5(user.Password)   //将密码以MD5加密存储
-	user.Registed = time.Now().Local()   //用户注册时间
-	user.Lastlogin = time.Now().Local()  //用户最后登录时间
-	user.Registeip = this.Ctx.Input.IP() //用户注册的ip
+	user.Password = models.MD5(user.Password) //将密码以MD5加密存储
+	user.Registed = time.Now().Local()        //用户注册时间
+	user.Lastlogin = time.Now().Local()       //用户最后登录时间
+	user.Registeip = this.Ctx.Input.IP()      //用户注册的ip
 
 	captchaCode := this.Input().Get("captcha")
 
@@ -276,6 +261,13 @@ func (this *UserController) RegisterAction() {
 	return
 }
 
+// 登录页
+func (this *UserController) Login() {
+	beego.ReadFromRequest(&this.Controller)
+	this.Data["Title"] = "用户登录"
+	this.TplNames = "login.html" //登录页
+}
+
 // 用户登录表单提交
 func (this *UserController) LoginAction() {
 	flash := beego.NewFlash()
@@ -290,7 +282,7 @@ func (this *UserController) LoginAction() {
 		return
 	}
 
-	user.Password = MD5(user.Password) //将密码以MD5加密存储
+	user.Password = models.MD5(user.Password) //将密码以MD5加密存储
 	captchaCode := this.Input().Get("captcha")
 
 	//判断验证码是否正确
@@ -323,7 +315,7 @@ func (this *UserController) LoginAction() {
 			}
 
 			this.SetSession("user", u) //将用户信息存放到Session中
-			flash.Notice("登录成功!")
+			flash.Notice("用户" + u.Nickname + "登录成功!")
 			flash.Store(&this.Controller)
 			this.Redirect("/", 302) //登录成功
 			return
