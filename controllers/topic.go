@@ -236,21 +236,22 @@ func (this *TopicController) AddTopic() {
 			log.Print("创建文件失败:" + err.Error())
 		}
 
-		tp1, err := filepath.Abs("views/header.tpl")
-		tp2, err := filepath.Abs("views/view_topic.html")
-		tp3, err := filepath.Abs("views/footer.tpl")
-		tp4, err := filepath.Abs("views/msg.tpl")
-		tp5, err := filepath.Abs("views/nav.tpl")
+		// tp1, err := filepath.Abs("views/header.tpl")
+		// tp2, err := filepath.Abs("views/view_topic.html")
+		// tp3, err := filepath.Abs("views/footer.tpl")
+		// tp4, err := filepath.Abs("views/msg.tpl")
+		// tp5, err := filepath.Abs("views/nav.tpl")
 
 		if err != nil {
 			log.Print("读取模板失败:" + err.Error())
 		}
 
-		var tplFuncMap template.FuncMap
-		tplFuncMap = make(template.FuncMap)
-		tplFuncMap["dateformat"] = beego.DateFormat
-		t := template.New("view_topic.html")
-		t, err = t.Funcs(tplFuncMap).ParseFiles(tp1, tp2, tp3, tp4, tp5)
+		tplFuncMap := make(template.FuncMap)
+		tplFuncMap["dateformat"] = beego.DateFormat //注册模板中使用到的模板函数dateformat
+
+		t := template.New("view_topic.html") //此处的view_topic.html为具体的模板名称
+		t = t.Funcs(tplFuncMap)              /*.ParseFiles(tp1, tp2, tp3, tp4, tp5)*/
+		t, err = t.ParseGlob("views/*")      //模板存放路径 将会匹配到views/目录下的所有文件
 
 		if err != nil {
 			log.Print("解析模板失败:" + err.Error())
@@ -259,6 +260,7 @@ func (this *TopicController) AddTopic() {
 		data := map[string]interface{}{
 			"Title": "title",
 			"Topic": topic,
+			"Time":  time.Now().Local(),
 		}
 
 		err = t.Execute(file, data)
