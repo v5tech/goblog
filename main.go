@@ -25,5 +25,6 @@ func main() {
 	beego.SetLogFuncCall(true)            //开启日志输出
 	beego.SessionOn = true                //开启Session
 	orm.RunSyncdb("default", false, true) //设置创建表结构
+	beego.SetStaticPath("/html", "html")  //开启html静态目录
 	beego.Run()
 }

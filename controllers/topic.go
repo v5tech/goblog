@@ -3,6 +3,10 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"goblog/models"
+	"html/template"
+	"log"
+	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -220,6 +224,46 @@ func (this *TopicController) AddTopic() {
 			flash.Store(&this.Controller)
 			this.Redirect("/topic/add", 302)
 			return
+		}
+
+		staticpath, err := filepath.Abs("html/" + strconv.FormatInt(topic.Id, 10) + ".html")
+		if err != nil {
+			log.Print("获取文件的物理路径失败:" + err.Error())
+		}
+
+		file, err := os.Create(staticpath)
+		if err != nil {
+			log.Print("创建文件失败:" + err.Error())
+		}
+
+		tp1, err := filepath.Abs("views/header.tpl")
+		tp2, err := filepath.Abs("views/view_topic.html")
+		tp3, err := filepath.Abs("views/footer.tpl")
+		tp4, err := filepath.Abs("views/msg.tpl")
+		tp5, err := filepath.Abs("views/nav.tpl")
+
+		if err != nil {
+			log.Print("读取模板失败:" + err.Error())
+		}
+
+		var tplFuncMap template.FuncMap
+		tplFuncMap = make(template.FuncMap)
+		tplFuncMap["dateformat"] = beego.DateFormat
+		t := template.New("view_topic.html")
+		t, err = t.Funcs(tplFuncMap).ParseFiles(tp1, tp2, tp3, tp4, tp5)
+
+		if err != nil {
+			log.Print("解析模板失败:" + err.Error())
+		}
+
+		data := map[string]interface{}{
+			"Title": "title",
+			"Topic": topic,
+		}
+
+		err = t.Execute(file, data)
+		if err != nil {
+			log.Print("解析模板失败:" + err.Error())
 		}
 
 		this.Redirect("/", 302) //添加成功到文章列表页

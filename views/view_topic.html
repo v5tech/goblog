@@ -1,7 +1,6 @@
-{{template "header"}}
+{{template "header" .}}
 <title>{{.Title}}</title>
 </head>
-
 <body>
     {{template "nav" .}}
     <div class="container">
@@ -27,4 +26,4 @@
         </p>
         {{end}}
     </div>
-    {{template "footer"}}
+    {{template "footer" .}}
