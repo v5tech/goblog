@@ -248,7 +248,7 @@ func (this *TopicController) AddTopic() {
 
 		tplFuncMap := make(template.FuncMap)
 		tplFuncMap["dateformat"] = beego.DateFormat //注册模板中使用到的模板函数dateformat
-
+		// tplFuncMap["str2html"] = beego.Str2html     //注入模板中使用到的模板函数str2html
 		t := template.New("view_topic.html") //此处的view_topic.html为具体的模板名称
 		t = t.Funcs(tplFuncMap)              /*.ParseFiles(tp1, tp2, tp3, tp4, tp5)*/
 		t, err = t.ParseGlob("views/*")      //模板存放路径 将会匹配到views/目录下的所有文件
@@ -258,9 +258,10 @@ func (this *TopicController) AddTopic() {
 		}
 
 		data := map[string]interface{}{
-			"Title": "title",
-			"Topic": topic,
-			"Time":  time.Now().Local(),
+			"Title":     "title",
+			"Topic":     topic,
+			"Time":      time.Now().Local(),
+			"Generated": beego.Str2html("<!-- 本页创建于" + beego.DateFormat(time.Now().Local(), "2006-01-02 15:04:05") + " -->"),
 		}
 
 		err = t.Execute(file, data)
